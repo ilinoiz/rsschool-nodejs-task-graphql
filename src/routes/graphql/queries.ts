@@ -1,41 +1,34 @@
-import {
-  GraphQLFloat,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLSchema,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLBoolean,
-} from 'graphql';
-import {
-  memberTypeType,
-  postType,
-  profileType,
-  profileTypeFields,
-  userFields,
-  userType,
-} from './types.js';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
+import { memberTypeType, postType, profileType, userType } from './types.js';
 import { UUIDType } from './types/uuid.js';
 import MemberTypeId from './types/memberTypeId.js';
-import { getMemberTypeByIdResolver, getMemberTypesResolver, getPostByIdResolver, getPostsResolver, getProfileByIdResolver, getProfilesResolver, getUserByIdResolver, getUsersResolver } from './rootResolvers.js';
+import {
+  getMemberTypeByIdResolver,
+  getMemberTypesResolver,
+  getPostByIdResolver,
+  getPostsResolver,
+  getProfileByIdResolver,
+  getProfilesResolver,
+  getUserByIdResolver,
+  getUsersResolver,
+} from './rootResolvers.js';
 
 const allQueryFields = {
   users: {
     type: new GraphQLList(userType),
-    resolve: async () => await getUsersResolver(),
+    resolve: async (_source, _args, context) => await getUsersResolver(context),
   },
   posts: {
     type: new GraphQLList(postType),
-    resolve: async () => await getPostsResolver(),
+    resolve: async (_source, _args, context) => await getPostsResolver(context),
   },
   memberTypes: {
     type: new GraphQLList(memberTypeType),
-    resolve: async () => await getMemberTypesResolver(),
+    resolve: async (_source, _args, context) => await getMemberTypesResolver(context),
   },
   profiles: {
     type: new GraphQLList(profileType),
-    resolve: async () => await getProfilesResolver(),
+    resolve: async (_source, _args, context) => await getProfilesResolver(context),
   },
 };
 
@@ -47,7 +40,7 @@ const getByIdQueryFields = {
         type: new GraphQLNonNull(UUIDType),
       },
     },
-    resolve: async (_source, args) => await getUserByIdResolver(args),
+    resolve: async (_source, args, context) => await getUserByIdResolver(args, context),
   },
   post: {
     type: postType,
@@ -56,7 +49,7 @@ const getByIdQueryFields = {
         type: new GraphQLNonNull(UUIDType),
       },
     },
-    resolve: async (_source, args) => await getPostByIdResolver(args),
+    resolve: async (_source, args, context) => await getPostByIdResolver(args, context),
   },
   memberType: {
     type: memberTypeType,
@@ -65,7 +58,8 @@ const getByIdQueryFields = {
         type: new GraphQLNonNull(MemberTypeId),
       },
     },
-    resolve: async (_source, args) => await getMemberTypeByIdResolver(args),
+    resolve: async (_source, args, context) =>
+      await getMemberTypeByIdResolver(args, context),
   },
   profile: {
     type: profileType,
@@ -74,7 +68,8 @@ const getByIdQueryFields = {
         type: new GraphQLNonNull(UUIDType),
       },
     },
-    resolve: async (_source, args) => await getProfileByIdResolver(args),
+    resolve: async (_source, args, context) =>
+      await getProfileByIdResolver(args, context),
   },
 };
 

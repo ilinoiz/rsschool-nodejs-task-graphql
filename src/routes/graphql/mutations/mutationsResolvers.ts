@@ -1,4 +1,4 @@
-import { prisma } from '../rootResolvers.js';
+import { prisma } from "../index.js";
 
 export const createPost = async ({ dto }) => {
   const result = await prisma.post.create({

@@ -1,5 +1,6 @@
 import DataLoader from 'dataloader';
 import { prisma } from './index.js';
+import { usersDataLoader } from './rootResolvers.js';
 
 const batchGetUserProfile = async (userIds): Promise<Array<any>> => {
   const userProfiles = await prisma.profile.findMany({
@@ -58,7 +59,21 @@ const batchGetProfilesMemberType = async (memberTypeIds) => {
   return result;
 };
 
-const batchGetUserSubscribedTo = async (userIds) => {
+const batchGetSubscribedToUser = async (userIds) => {
+  const usersFromCache = (await usersDataLoader.load('ALL')) as any;
+  if (usersFromCache) {
+    const result = await Promise.all(
+      userIds.map((userId) => {
+        return usersFromCache.filter(
+          (user) =>
+            user.subscribedToUser?.some(
+              (subscriber) => subscriber.subscriberId === userId,
+            ),
+        );
+      }),
+    );
+    return result;
+  }
   const userSubscribedToUsers = await prisma.user.findMany({
     where: {
       subscribedToUser: {
@@ -77,15 +92,28 @@ const batchGetUserSubscribedTo = async (userIds) => {
   });
   const result = await Promise.all(
     userIds.map((userId) => {
-      return userSubscribedToUsers.filter((user) =>
-        user.subscribedToUser.some((subscriber) => subscriber.subscriberId === userId),
+      return userSubscribedToUsers.filter(
+        (user) =>
+          user.subscribedToUser?.some((subscriber) => subscriber.subscriberId === userId),
       );
     }),
   );
   return result;
 };
 
-export const batchGetSubscribedToUser = async (userIds) => {
+export const batchGetUserSubscribedTo = async (userIds) => {
+  const usersFromCache = (await usersDataLoader.load('ALL')) as any;
+  if (usersFromCache) {
+    const result = await Promise.all(
+      userIds.map((userId) => {
+        return usersFromCache.filter((user) =>
+          user.userSubscribedTo.some((subscriber) => subscriber.authorId === userId),
+        );
+      }),
+    );
+    return result;
+  }
+
   const subscribedToUser = await prisma.user.findMany({
     where: {
       userSubscribedTo: {

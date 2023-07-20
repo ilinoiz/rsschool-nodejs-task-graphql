@@ -1,5 +1,15 @@
 // import { PrismaClient } from "@prisma/client";
 
+import DataLoader from 'dataloader';
+import { prisma } from './index.js';
+import {
+  parseResolveInfo,
+  simplifyParsedResolveInfoFragmentWithType,
+} from 'graphql-parse-resolve-info';
+import { userType } from './types.js';
+import {
+  GraphQLResolveInfo,
+} from 'graphql';
 // export const testprisma = new PrismaClient({
 //   log: [
 //     {
@@ -28,8 +38,45 @@
 //    console.log(counter.QUERY_COUNTER++);
 // });
 
-export const getUsersResolver = async ({ prisma }) => {
-  const result = await prisma.user.findMany();
+// const batchGetUsers = async (): Promise<Array<any>> => {
+//   const users = await prisma.user.findMany();
+//   usersDataLoader.prime('ALL', users);
+
+//   // const result = await Promise.all(
+//   //   userIds.map(async (userId) => {
+//   //     const targetProfile = userProfiles.find((profile) => profile.userId === userId);
+//   //     return targetProfile ?? null;
+//   //   }),
+//   // );
+
+//   return users;
+// };
+export const usersDataLoader = new DataLoader((keys) => {
+  return prisma.user.findMany();
+});
+export const getUsersResolver = async ({ prisma }, resolveInfo: GraphQLResolveInfo) => {
+  const parsedResolveInfoFragment = parseResolveInfo(resolveInfo) as any;
+  // if (!parsedResolveInfoFragment) {
+  //   return;
+  // }
+  const { fields } = simplifyParsedResolveInfoFragmentWithType(
+    parsedResolveInfoFragment,
+    userType,
+  ) as any;
+  const subQuery = {
+    include: {
+      // userSubscribedTo: true,
+      // subscribedToUser: true,
+    },
+  } as any;
+  if (fields.userSubscribedTo) {
+    subQuery.include.userSubscribedTo = true;
+  }
+  if (fields.subscribedToUser) {
+    subQuery.include.subscribedToUser = true;
+  }
+  const result = await prisma.user.findMany({ ...subQuery });
+  usersDataLoader.prime('ALL', result);
   return result;
 };
 

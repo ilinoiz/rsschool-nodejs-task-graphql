@@ -16,7 +16,8 @@ import {
 const allQueryFields = {
   users: {
     type: new GraphQLList(userType),
-    resolve: async (_source, _args, context) => await getUsersResolver(context),
+    resolve: async (_source, _args, context, resolveInfo) =>
+      await getUsersResolver(context, resolveInfo),
   },
   posts: {
     type: new GraphQLList(postType),

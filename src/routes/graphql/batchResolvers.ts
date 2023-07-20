@@ -61,12 +61,12 @@ const batchGetProfilesMemberType = async (memberTypeIds) => {
 
 const batchGetSubscribedToUser = async (userIds) => {
   const usersFromCache = (await usersDataLoader.load('ALL')) as any;
-  if (usersFromCache) {
+  if (usersFromCache?.length) {
     const result = await Promise.all(
       userIds.map((userId) => {
         return usersFromCache.filter(
           (user) =>
-            user.subscribedToUser?.some(
+            user.userSubscribedTo?.some(
               (subscriber) => subscriber.subscriberId === userId,
             ),
         );
@@ -76,16 +76,16 @@ const batchGetSubscribedToUser = async (userIds) => {
   }
   const userSubscribedToUsers = await prisma.user.findMany({
     where: {
-      subscribedToUser: {
+      userSubscribedTo: {
         some: {
-          subscriberId: { in: userIds },
+          authorId: { in: userIds },
         },
       },
     },
     include: {
-      subscribedToUser: {
+      userSubscribedTo: {
         where: {
-          subscriberId: { in: userIds },
+          authorId: { in: userIds },
         },
       },
     },
@@ -94,7 +94,7 @@ const batchGetSubscribedToUser = async (userIds) => {
     userIds.map((userId) => {
       return userSubscribedToUsers.filter(
         (user) =>
-          user.subscribedToUser?.some((subscriber) => subscriber.subscriberId === userId),
+          user.userSubscribedTo?.some((subscriber) => subscriber.authorId === userId),
       );
     }),
   );
@@ -103,11 +103,11 @@ const batchGetSubscribedToUser = async (userIds) => {
 
 export const batchGetUserSubscribedTo = async (userIds) => {
   const usersFromCache = (await usersDataLoader.load('ALL')) as any;
-  if (usersFromCache) {
+  if (usersFromCache?.length) {
     const result = await Promise.all(
       userIds.map((userId) => {
         return usersFromCache.filter((user) =>
-          user.userSubscribedTo.some((subscriber) => subscriber.authorId === userId),
+          user.subscribedToUser.some((subscriber) => subscriber.authorId === userId),
         );
       }),
     );
@@ -116,16 +116,16 @@ export const batchGetUserSubscribedTo = async (userIds) => {
 
   const subscribedToUser = await prisma.user.findMany({
     where: {
-      userSubscribedTo: {
+      subscribedToUser: {
         some: {
-          authorId: { in: userIds },
+          subscriberId: { in: userIds },
         },
       },
     },
     include: {
-      userSubscribedTo: {
+      subscribedToUser: {
         where: {
-          authorId: { in: userIds },
+          subscriberId: { in: userIds },
         },
       },
     },
@@ -133,7 +133,7 @@ export const batchGetUserSubscribedTo = async (userIds) => {
   const result = await Promise.all(
     userIds.map((userId) => {
       return subscribedToUser.filter((user) =>
-        user.userSubscribedTo.some((subscriber) => subscriber.authorId === userId),
+        user.subscribedToUser.some((subscriber) => subscriber.subscriberId === userId),
       );
     }),
   );

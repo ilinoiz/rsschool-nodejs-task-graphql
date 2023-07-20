@@ -1,15 +1,12 @@
 // import { PrismaClient } from "@prisma/client";
 
 import DataLoader from 'dataloader';
-import { prisma } from './index.js';
 import {
   parseResolveInfo,
   simplifyParsedResolveInfoFragmentWithType,
 } from 'graphql-parse-resolve-info';
 import { userType } from './types.js';
-import {
-  GraphQLResolveInfo,
-} from 'graphql';
+import { GraphQLResolveInfo } from 'graphql';
 // export const testprisma = new PrismaClient({
 //   log: [
 //     {
@@ -52,7 +49,11 @@ import {
 //   return users;
 // };
 export const usersDataLoader = new DataLoader((keys) => {
-  return prisma.user.findMany();
+  return Promise.all(
+    keys.map((key) => {
+      Promise.resolve();
+    }),
+  );
 });
 export const getUsersResolver = async ({ prisma }, resolveInfo: GraphQLResolveInfo) => {
   const parsedResolveInfoFragment = parseResolveInfo(resolveInfo) as any;
@@ -76,7 +77,9 @@ export const getUsersResolver = async ({ prisma }, resolveInfo: GraphQLResolveIn
     subQuery.include.subscribedToUser = true;
   }
   const result = await prisma.user.findMany({ ...subQuery });
-  usersDataLoader.prime('ALL', result);
+  if (fields.subscribedToUser || fields.subscribedToUser) {
+    usersDataLoader.prime('ALL', result);
+  }
   return result;
 };
 

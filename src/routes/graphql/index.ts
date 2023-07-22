@@ -3,7 +3,6 @@ import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
 import { graphql, validate, parse } from 'graphql';
 import { RootSchema } from './graphqlSchema.js';
 import depthLimit from 'graphql-depth-limit';
-// import { counter } from './rootResolvers.js';
 import { PrismaClient } from '@prisma/client';
 
 export let prisma: PrismaClient = new PrismaClient();
@@ -28,7 +27,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
       prisma = fastify.prisma;
 
-      // counter.QUERY_COUNTER = 1;
       const result = await graphql({
         schema: RootSchema,
         source: req.body.query,

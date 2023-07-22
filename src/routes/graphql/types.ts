@@ -3,7 +3,6 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLSchema,
   GraphQLString,
   GraphQLInt,
   GraphQLBoolean,
@@ -14,7 +13,7 @@ import {
   getUserPostsResolver,
   getUserSubscribedToResolver,
   getUsersProfileResolver,
-} from './resolvers.js';
+} from './queries/resolvers/resolvers.js';
 
 export const postType = new GraphQLObjectType({
   name: 'Post',

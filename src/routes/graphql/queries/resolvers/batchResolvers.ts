@@ -1,6 +1,8 @@
 import DataLoader from 'dataloader';
-import { prisma } from './index.js';
 import { usersDataLoader } from './rootResolvers.js';
+import { prisma } from '../../index.js';
+
+export const ALL_USERS_CACHE_KEY = 'ALL_USERS';
 
 const batchGetUserProfile = async (userIds): Promise<Array<any>> => {
   const userProfiles = await prisma.profile.findMany({
@@ -60,7 +62,7 @@ const batchGetProfilesMemberType = async (memberTypeIds) => {
 };
 
 const batchGetSubscribedToUser = async (userIds) => {
-  const usersFromCache = (await usersDataLoader.load('ALL')) as any;
+  const usersFromCache = (await usersDataLoader.load(ALL_USERS_CACHE_KEY)) as any;
   if (usersFromCache?.length) {
     const result = await Promise.all(
       userIds.map((userId) => {
@@ -102,7 +104,7 @@ const batchGetSubscribedToUser = async (userIds) => {
 };
 
 export const batchGetUserSubscribedTo = async (userIds) => {
-  const usersFromCache = (await usersDataLoader.load('ALL')) as any;
+  const usersFromCache = (await usersDataLoader.load(ALL_USERS_CACHE_KEY)) as any;
   if (usersFromCache?.length) {
     const result = await Promise.all(
       userIds.map((userId) => {
